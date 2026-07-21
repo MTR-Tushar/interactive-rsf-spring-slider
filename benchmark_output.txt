@@ -1,0 +1,39 @@
+==========================================================================
+ benchmark_engine.py -- cost of advance() by regime and chunk size
+ rsf_engine v0.2, formulation lnV_lntheta
+==========================================================================
+ 'model/real' is model seconds simulated per second of wall time.
+ A value of 1.0 means the simulation runs at real-time speed.
+
+  (1) STABLE  k = 3.00 kc_QD, V ~ V_lp = 1e-6 m/s
+      chunk/s   median ms   mean ms    max ms  model/real  reps
+         0.01       2.029     2.065     2.406         4.9    30
+         0.10       2.190     2.255     3.618        45.7    30
+         1.00       2.516     3.043    17.772       397.5    30
+         5.00       2.478     2.520     2.914      2018.1    30
+
+  (2) INTERSEISMIC  k = 0.40 kc_QD, V = 1.177e-09 m/s (locked limb)
+      chunk/s   median ms   mean ms    max ms  model/real  reps
+         0.01       2.061     2.146     3.396         4.9    30
+         0.10       2.324     2.377     2.838        43.0    30
+         1.00       2.575     2.737     4.362       388.4    30
+         5.00       2.709     3.207    10.629      1845.5    30
+
+  (3) RAPID SLIP  V = 1.887e-02 m/s (coseismic limb)
+      chunk/s   median ms   mean ms    max ms  model/real  reps
+         0.01       2.594     6.545    54.421         3.9    20
+         0.10       2.894     9.426   121.311        34.5    20
+         1.00       2.571    10.731   140.859       389.0    20
+         5.00       2.879    11.536   164.770      1736.9    20
+
+==========================================================================
+ INTERPRETATION
+==========================================================================
+  chunk  0.01 s : worst-regime median   2.594 ms  -> fits in a 1/30 s frame budget (33.3 ms)
+  chunk  0.10 s : worst-regime median   2.894 ms  -> fits in a 1/30 s frame budget (33.3 ms)
+  chunk  1.00 s : worst-regime median   2.575 ms  -> fits in a 1/30 s frame budget (33.3 ms)
+  chunk  5.00 s : worst-regime median   2.879 ms  -> fits in a 1/30 s frame budget (33.3 ms)
+
+  Largest benchmarked chunk fitting a 30 Hz budget in the worst regime: 5.0 s
+  NOTE: the worst regime is the one that matters. A loop tuned on the
+  interseismic cost alone will stall the moment an event starts.

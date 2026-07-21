@@ -1,0 +1,53 @@
+=============================================================================
+ FROZEN SNAPSHOT  --  v0.2  (Stage 3)
+ Date: 2026-07-21
+=============================================================================
+ Interactive rate-and-state spring-slider: numerical engine, UI-independent
+ controller, and NiceGUI PhET-style interface.
+
+ CONTENTS
+   rsf_engine_v0_2_2026-07-21.py                  engine, v0.2
+   simulation_controller_v0_2_2026-07-21.py       controller, v0.2
+   interactive_rsf_spring_slider_v0_2_2026-07-21.py   NiceGUI front end
+   test_rsf_engine_v0_2_2026-07-21.py             107-check engine suite
+   test_simulation_controller_v0_2_2026-07-21.py  148-check controller suite
+   benchmark_engine_v0_2_2026-07-21.py            performance benchmark
+   headless_ui_check_v0_2_2026-07-21.py           browser-less interface check
+   README_v0_2_2026-07-21.md
+   requirements_v0_2_2026-07-21.txt
+   test_output_v0_2_2026-07-21.txt                full output of BOTH suites
+   benchmark_output_v0_2_2026-07-21.txt
+   headless_ui_check_output_v0_2_2026-07-21.txt
+
+ VALIDATION AT FREEZE
+   Stage-2 engine suite       : 107 passed, 0 failed, 0 crashed
+   Stage-3 controller suite   : 148 passed, 0 failed, 0 crashed
+   Headless interface check   :  35 passed, 0 failed
+   TOTAL                      : 290 automated checks, 0 failures
+
+ CHANGES FROM v0.1
+   Engine (v0.1 -> v0.2), two additions only, no equation altered:
+     * SpringSliderEngine.set_schedule()  -- change V_lp mid-run at a chunk
+       boundary without touching lnV, theta, delta, u_lp or e0.
+     * SimulationState.copy()
+     All 107 v0.1 checks preserved unmodified.
+   New: simulation_controller.py, interactive_rsf_spring_slider.py,
+        test_simulation_controller.py, benchmark_engine.py,
+        headless_ui_check.py, README.md.
+
+ WHAT WAS NOT VERIFIED
+   Visual appearance in a browser. The development environment had no
+   browser, so layout, overlap, resizing, legibility and animation
+   smoothness were NOT inspected and are NOT claimed. README section 12
+   gives the steps to check this locally on Windows.
+
+ STANDING CAVEAT
+   Passing these checks shows the code solves the equations it claims to
+   solve and that the controls behave as specified. It is NOT evidence that
+   the model describes any real rock. This model is zero-dimensional and
+   quasi-dynamic: no nucleation length, no rupture front, no spatial
+   boundaries, no acoustic emissions. Radiation damping is not full inertia.
+   Successful execution is not scientific validation.
+
+ versions/v0_1/ REMAINS UNCHANGED.
+=============================================================================

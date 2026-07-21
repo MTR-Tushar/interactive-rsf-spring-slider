@@ -1,0 +1,47 @@
+==========================================================================
+ headless_ui_check.py  --  NO BROWSER AVAILABLE; appearance NOT judged
+==========================================================================
+ static page fetched: 32,523 bytes
+ scene generated    : 7,207 chars (interseismic), 7,280 chars (coseismic)
+ plot payload       : 2,241 stored, 1,200 plotted, 1 event marker(s)
+
+  [PASS] A  tabs Explore / Graphs / Physics
+  [PASS] A  playback buttons Play / Pause / Reset / Single Step
+  [PASS] A  Hold button
+  [PASS] A  speed toggle Slow / Normal / Fast
+  [PASS] A  loading-mode toggle
+  [PASS] A  drag-sensitivity control
+  [PASS] A  adaptive-advancement switch
+  [PASS] A  all five presets
+  [PASS] A  live-value rows
+  [PASS] A  k/kc_QD readout
+  [PASS] A  tooltips state provenance
+  [PASS] A  governing equations shown
+  [PASS] A  limitations block
+  [PASS] A  physical-vs-visual label explanation
+  [PASS] A  three chart elements
+  [PASS] A  interactive image present for dragging
+  [PASS] A  loading-mode row present
+  [PASS] B  scene builds and is substantial
+  [PASS] B  slider block drawn
+  [PASS] B  load-point handle drawn
+  [PASS] B  frictional interface drawn
+  [PASS] B  spring drawn with its stiffness
+  [PASS] B  V_lp arrow labelled
+  [PASS] B  V arrow labelled
+  [PASS] B  driving-stress indicator
+  [PASS] B  frictional-resistance indicator
+  [PASS] B  operational state badge
+  [PASS] B  magnification notice
+  [PASS] B  event-flash path renders
+  [PASS] B  scene reflects the numerical solution (mu matches snapshot)
+  [PASS] B  no NaN or inf leaked into the SVG
+  [PASS] B  plot data decimated for display only
+  [PASS] B  event markers present in plot payload
+  [PASS] B  plot latest point equals the animation's latest time
+  [PASS] B  all plotted series finite
+
+ 35/35 headless checks passed
+
+ NOT VERIFIED HERE: visual layout, overlap, resizing, font legibility,
+ animation smoothness, browser performance. Those require a browser.

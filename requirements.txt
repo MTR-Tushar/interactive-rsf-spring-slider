@@ -1,0 +1,17 @@
+# Interactive Rate-and-State Spring-Slider -- v0.2 (Stage 3)
+#
+# Install on Windows:
+#     py -m venv .venv
+#     .venv\Scripts\activate
+#     py -m pip install --upgrade pip
+#     pip install -r requirements.txt
+#
+# Numerical core (Stage 2). rsf_engine.py needs ONLY these two.
+numpy>=1.24
+scipy>=1.10
+
+# Interface (Stage 3). Needed only by interactive_rsf_spring_slider.py;
+# the engine, the controller and both test suites run without it.
+# NiceGUI bundles its own web server (uvicorn/FastAPI) and ECharts, so no
+# separate plotting or JavaScript dependency is required.
+nicegui>=2.0

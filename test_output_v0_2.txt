@@ -1,0 +1,453 @@
+########## STAGE-2 ENGINE SUITE ##########
+==========================================================================
+ test_rsf_engine.py  --  Stage-2 validation suite for rsf_engine v0.2
+ numpy 2.4.4   python 3.12.3
+==========================================================================
+ These tests check INTERNAL CONSISTENCY of the implementation.
+ They are NOT scientific validation of the physical model.
+
+--------------------------------------------------------------------------
+TEST 1  --  Analytical quasi-static critical stiffness kc_QS
+--------------------------------------------------------------------------
+    [PASS] kc_QS matches the worked value 2.5e9 Pa/m  --  got 2500000000, want 2500000000, rel 0.000e+00
+    [PASS] kc_QS doubles when sigma_n doubles  --  got 5000000000, want 5000000000, rel 0.000e+00
+    [PASS] kc_QS halves when Dc doubles  --  got 1250000000, want 1250000000, rel 0.000e+00
+    [PASS] kc_QS < 0 for velocity strengthening (a > b)  --  kc_QS = -2.5000e+09 Pa/m
+
+--------------------------------------------------------------------------
+TEST 2  --  Quasi-dynamic critical stiffness kc_QD (independent derivation)
+--------------------------------------------------------------------------
+    [PASS] trace(J) changes sign across the bracket  --  tr(lo) = 6.6633e+01, tr(hi) = -3.2667e+03
+    [PASS] bisection root of trace(J)=0 equals the closed form kc_QD  --  got 2000000000, want 2000000000, rel 1.192e-16
+    [PASS] det(J) > 0 over 1200 (k, V_ss) samples -> Hopf, not saddle-node  --  min det = 1.0000e-12
+    [PASS] analytic 2x2 Jacobian matches the ageing-law code Jacobian  --  max relative difference 3.411e-16
+    [PASS] analytic 2x2 Jacobian matches the slip-law code Jacobian  --  max relative difference 1.705e-16
+    [PASS] kc_QD < kc_QS (radiation damping is stabilising)  --  kc_QD = 2.00000e+09, kc_QS = 2.50000e+09 Pa/m (20.00% lower at V_ss = 2.0e-03 m/s)
+    NOTE: At the laboratory rate V_ss = 1e-6 m/s the correction is eta*V_ss = 5 Pa against sigma_n(b-a) = 5e+04 Pa, i.e. kc_QD and kc_QS differ by 0.0100%. The distinction is real but numerically invisible at lab rates.
+
+--------------------------------------------------------------------------
+TEST 3  --  Steady sliding is an exact fixed point
+--------------------------------------------------------------------------
+    [PASS] theta_ss = Dc/V_ss  --  got 20, want 20, rel 1.776e-16
+    [PASS] RHS of (lnV, state) vanishes at the fixed point [ageing, lnV_theta]  --  dlnV/dt = 3.593e-17 1/s, dstate/dt = -4.441e-16 1/s (machine eps = 2.22e-16)
+    [PASS] ddelta/dt = V and du_lp/dt = V_lp [ageing, lnV_theta]  --  ddelta/dt = 1.000000e-06, du_lp/dt = 1.000000e-06 m/s
+    [PASS] RHS of (lnV, state) vanishes at the fixed point [ageing, lnV_lntheta]  --  dlnV/dt = 6.091e-17 1/s, dstate/dt = -3.469e-17 1/s (machine eps = 2.22e-16)
+    [PASS] ddelta/dt = V and du_lp/dt = V_lp [ageing, lnV_lntheta]  --  ddelta/dt = 1.000000e-06, du_lp/dt = 1.000000e-06 m/s
+    [PASS] RHS of (lnV, state) vanishes at the fixed point [slip, lnV_theta]  --  dlnV/dt = 3.593e-17 1/s, dstate/dt = -4.441e-16 1/s (machine eps = 2.22e-16)
+    [PASS] ddelta/dt = V and du_lp/dt = V_lp [slip, lnV_theta]  --  ddelta/dt = 1.000000e-06, du_lp/dt = 1.000000e-06 m/s
+    [PASS] RHS of (lnV, state) vanishes at the fixed point [slip, lnV_lntheta]  --  dlnV/dt = -8.469e-18 1/s, dstate/dt = -0.000e+00 1/s (machine eps = 2.22e-16)
+    [PASS] ddelta/dt = V and du_lp/dt = V_lp [slip, lnV_lntheta]  --  ddelta/dt = 1.000000e-06, du_lp/dt = 1.000000e-06 m/s
+    [PASS] V*theta/Dc = 1 at steady state  --  got 1, want 1, rel 0.000e+00
+
+--------------------------------------------------------------------------
+TEST 4  --  Velocity strengthening (a > b)
+--------------------------------------------------------------------------
+    [PASS] validate() reports velocity strengthening
+    [PASS] predicted growth rate is negative (stable)  --  Re(lambda)max = -1.750037e-02 1/s
+    [PASS] measured decay rate matches prediction within 1%  --  measured -1.750039e-02, predicted -1.750037e-02 1/s, fit R^2 = 1.000000
+    [PASS] V converges to V_lp after 2000 s  --  got 1e-06, want 1e-06, rel 1.213e-13
+    [PASS] no events detected  --  0 events
+
+--------------------------------------------------------------------------
+TEST 5-7  --  Stable / unstable / near-critical velocity weakening (growth rates, not event counts)
+--------------------------------------------------------------------------
+    [PASS] clearly stable   k = 3.00 kc_QD: sign of Re(lambda) matches k vs kc_QD  --  Re(lambda)max = -4.99900e-02 1/s, k/kc_QD = 3.0000
+    [PASS] clearly stable   k = 3.00 kc_QD: MEASURED rate matches predicted within 1%  --  measured -4.99900e-02, predicted -4.99900e-02 1/s, rel 3.865e-07, R^2 1.000000
+    [PASS] near-critical    k = 1.02 kc_QD: sign of Re(lambda) matches k vs kc_QD  --  Re(lambda)max = -4.99900e-04 1/s, k/kc_QD = 1.0200
+    [PASS] near-critical    k = 1.02 kc_QD: MEASURED rate matches predicted within 1%  --  measured -4.99900e-04, predicted -4.99900e-04 1/s, rel 1.559e-07, R^2 1.000000
+    [PASS] near-critical    k = 0.98 kc_QD: sign of Re(lambda) matches k vs kc_QD  --  Re(lambda)max = +4.99900e-04 1/s, k/kc_QD = 0.9800
+    [PASS] near-critical    k = 0.98 kc_QD: MEASURED rate matches predicted within 1%  --  measured +4.99900e-04, predicted +4.99900e-04 1/s, rel 7.687e-07, R^2 1.000000
+    [PASS] clearly unstable k = 0.40 kc_QD: sign of Re(lambda) matches k vs kc_QD  --  Re(lambda)max = +1.49970e-02 1/s, k/kc_QD = 0.4000
+    [PASS] clearly unstable k = 0.40 kc_QD: MEASURED rate matches predicted within 1%  --  measured +1.49972e-02, predicted +1.49970e-02 1/s, rel 1.511e-05, R^2 1.000000
+    [PASS] unstable case produces threshold-crossing events  --  5 events at V > 1 mm/s
+    [PASS] post-spin-up recurrence intervals are repeatable (CoV < 1%)  --  mean 773.9746 s, CoV 1.675e-07, n = 3
+    NOTE: Limit-cycle recurrence time 773.97 s; peak V 1.0168e-01 m/s.
+    [PASS] stable velocity-weakening case creeps at V_lp  --  got 1e-06, want 1e-06, rel 8.470e-15
+    [PASS] stable velocity-weakening case produces no events  --  0 events
+
+--------------------------------------------------------------------------
+TEST 8  --  Discriminating test: k between kc_QD and kc_QS
+--------------------------------------------------------------------------
+    [PASS] chosen k lies between kc_QD and kc_QS  --  k/kc_QS = 0.8800 (< 1: QS predicts UNSTABLE), k/kc_QD = 1.1000 (> 1: QD predicts STABLE)
+    [PASS] validate() flags the disagreement
+    [PASS] the IMPLEMENTED system is stable -> kc_QD is the right threshold  --  measured -3.33333e+00 1/s, predicted -3.33333e+00 1/s, R^2 1.000000
+    [PASS] measured rate matches the kc_QD-based prediction within 1%  --  rel difference 4.733e-08
+    [PASS] k = 0.90 kc_QD at the same V_lp is unstable  --  measured +3.33333e+00 1/s, predicted +3.33333e+00 1/s
+    NOTE: This is the test that distinguishes the two thresholds. The quasi-static criterion kc_QS predicts instability for the first case and is contradicted by the implemented system.
+
+--------------------------------------------------------------------------
+TEST 9  --  Ageing vs slip law
+--------------------------------------------------------------------------
+    [PASS] both laws share the PREDICTED linear growth rate  --  got 0.0149970003, want 0.0149970003, rel 0.000e+00
+    [PASS] both laws share the MEASURED linear growth rate within 2%  --  ageing +1.49972e-02, slip +1.49975e-02 1/s
+    [PASS] the two laws give DIFFERENT nonlinear limit cycles  --  recurrence: ageing 773.975 s, slip 677.347 s (12.48% apart)
+    NOTE: Peak slip velocity: ageing 1.0168e-01 m/s, slip 1.0885e-01 m/s. Same linear threshold, different nonlinear behaviour -- exactly as the project text states.
+
+--------------------------------------------------------------------------
+TEST 10  --  Spring-stress invariant tau_spring - tau_total = 0
+--------------------------------------------------------------------------
+    [PASS] [lnV_theta] max |tau_spring - tau_total| is at solver tolerance  --  max 9.5385e-05 Pa = 9.539e-12 of sigma_n (over 10933 samples spanning 3000 s)
+    [PASS] [lnV_theta] invariant also holds during rapid slip  --  max 8.6586e-05 Pa = 8.659e-12 of sigma_n
+    [PASS] [lnV_lntheta] max |tau_spring - tau_total| is at solver tolerance  --  max 7.1637e-06 Pa = 7.164e-13 of sigma_n (over 11657 samples spanning 3000 s)
+    [PASS] [lnV_lntheta] invariant also holds during rapid slip  --  max 7.1637e-06 Pa = 7.164e-13 of sigma_n
+
+--------------------------------------------------------------------------
+TEST 11  --  V > 0 and theta > 0, by coordinates not clipping
+--------------------------------------------------------------------------
+    [PASS] [lnV_theta, ageing] V > 0 everywhere  --  min V = 1.9608e-11 m/s, max V = 1.0168e-01 m/s
+    [PASS] [lnV_theta, ageing] theta > 0 everywhere  --  min theta = 2.0693e-04 s
+    [PASS] [lnV_theta, ageing] all outputs finite
+    [PASS] [lnV_theta, slip] V > 0 everywhere  --  min V = 3.5731e-08 m/s, max V = 1.0885e-01 m/s
+    [PASS] [lnV_theta, slip] theta > 0 everywhere  --  min theta = 1.9251e-04 s
+    [PASS] [lnV_theta, slip] all outputs finite
+    [PASS] [lnV_lntheta, ageing] V > 0 everywhere  --  min V = 1.9608e-11 m/s, max V = 1.0168e-01 m/s
+    [PASS] [lnV_lntheta, ageing] theta > 0 everywhere  --  min theta = 2.0693e-04 s
+    [PASS] [lnV_lntheta, ageing] all outputs finite
+    [PASS] [lnV_lntheta, slip] V > 0 everywhere  --  min V = 3.5731e-08 m/s, max V = 1.0885e-01 m/s
+    [PASS] [lnV_lntheta, slip] theta > 0 everywhere  --  min theta = 1.9251e-04 s
+    [PASS] [lnV_lntheta, slip] all outputs finite
+
+--------------------------------------------------------------------------
+TEST 12  --  Formulation A [lnV, theta] vs B [lnV, ln theta]
+--------------------------------------------------------------------------
+
+    formulation   law         nfev   njev    nlu   wall/s   rel resid  theta_min/s  events
+    lnV_theta     ageing     80028    993  12388     2.64    9.54e-12    2.069e-04       4
+    lnV_theta     slip       94474   1106  12770     3.70    1.87e-11    1.925e-04       5
+    lnV_lntheta   ageing     85126    890  12318     2.91    7.16e-13    2.069e-04       4
+    lnV_lntheta   slip       94625    982  12284     3.02    2.94e-13    1.925e-04       5
+
+    [PASS] lnV_theta/ageing completed without solver failure
+    [PASS] lnV_theta/slip completed without solver failure
+    [PASS] lnV_lntheta/ageing completed without solver failure
+    [PASS] lnV_lntheta/slip completed without solver failure
+    [PASS] [ageing] both formulations give the same recurrence time  --  A 773.97465 s vs B 773.97465 s, rel 1.100e-08
+    [PASS] [slip] both formulations give the same recurrence time  --  A 677.34727 s vs B 677.34728 s, rel 1.404e-08
+
+--------------------------------------------------------------------------
+TEST 13  --  Schedule breakpoints and chunk splitting
+--------------------------------------------------------------------------
+    [PASS] chunk containing a step is split into 2 sub-intervals  --  2 sub-intervals
+    [PASS] solver reported success across the step
+    [PASS] V_lp is exactly V1 at every sample before the step  --  11 samples, unique [1.e-06]
+    [PASS] V_lp is exactly V2 at every sample after the step  --  336 samples, unique [1.e-05]
+    [PASS] a sample sits exactly at the breakpoint
+    [PASS] friction rises after a step up in V_lp (direct effect present)  --  observed rise +0.008459, a*ln(V2/V1) = +0.011513 (upper bound: the spring is stiff but not rigid, so V lags V_lp)
+    [PASS] observed rise does not exceed the rigid-machine direct effect
+    [PASS] ramp chunk is split at both slope breakpoints  --  3 sub-intervals
+    [PASS] piecewise chunk is split at both switch times  --  3 sub-intervals
+    [PASS] piecewise V_lp takes only the declared values  --  unique values [1.e-06 3.e-06]
+    [PASS] sinusoid imposes its own max_step  --  1.0 s
+    [PASS] sinusoid rejects amplitude >= mean (would need V_lp < 0)
+    [PASS] negative V_lp is rejected
+
+--------------------------------------------------------------------------
+TEST 14  --  Chunked integration vs single-shot
+--------------------------------------------------------------------------
+    [PASS] interseismic: 100 chunks agree with 1 chunk in ln V  --  |d lnV| = 1.492e-13
+    [PASS] interseismic: 100 chunks agree with 1 chunk in cumulative slip  --  relative difference 2.512e-13
+    NOTE: Across a full stick-slip cycle (t = 0..1200 s) the same comparison gives |d lnV| = 1.766e-12. Chunking does not change the equations, but the unstable phase amplifies any difference exponentially, so bitwise agreement across an event is not expected and would not be a meaningful requirement.
+    [PASS] across an event the trajectories remain physically equivalent (same order of magnitude of V)  --  V single-shot 2.2426e-11, V chunked 2.2426e-11 m/s
+
+--------------------------------------------------------------------------
+TEST 15  --  Incremental event detection and spin-up
+--------------------------------------------------------------------------
+    [PASS] event count is independent of chunk size  --  dt=5.0 s -> 4 events; dt=0.37 s -> 4 events
+    [PASS] event onset times agree between chunk sizes (< 1 ms)  --  max difference 8.265e-05 s
+    [PASS] the first event is flagged as possible spin-up
+    [PASS] spin-up event genuinely differs from the limit cycle  --  first drop_tau_total 0.5107 MPa vs limit-cycle 0.6581 MPa (22.4% apart)
+    [PASS] excluding the spin-up event changes recurrence statistics  --  including: n = 3, CoV 1.051e-06; excluding: n = 2, CoV 2.047e-07
+    [PASS] total, frictional and damping drops are reported separately and differ  --  total 0.6581 MPa, friction 0.7527 MPa, damping 0.0000 MPa
+    NOTE: Reporting a single unqualified 'stress drop' would be ambiguous: the radiation-damping component eta*V is a substantial fraction of the total during rapid slip.
+    NOTE: Threshold sensitivity (events, mean duration): 1e-04 m/s -> 4 events, 0.1673 s, 1e-03 m/s -> 4 events, 0.0347 s, 1e-02 m/s -> 4 events, 0.0134 s. The threshold is an OPERATIONAL CONVENTION, not physics.
+
+--------------------------------------------------------------------------
+TEST 16  --  Failure reporting (no silent corruption)
+--------------------------------------------------------------------------
+/home/claude/rsf_engine.py:892: RuntimeWarning: divide by zero encountered in scalar divide
+  num = p.k * (V_lp - V) - p.sigma_n * p.b * dth / theta
+/usr/local/lib/python3.12/dist-packages/scipy/integrate/_ivp/common.py:125: RuntimeWarning: invalid value encountered in multiply
+  y1 = y0 + h0 * direction * f0
+/home/claude/rsf_engine.py:909: RuntimeWarning: divide by zero encountered in scalar divide
+  dratio_dth = -1.0 / theta ** 2
+/home/claude/rsf_engine.py:910: RuntimeWarning: invalid value encountered in scalar divide
+  dratio_dL = dth_dL / theta
+/home/claude/rsf_engine.py:921: RuntimeWarning: divide by zero encountered in scalar divide
+  num = p.k * (V_lp - V) - p.sigma_n * p.b * dth / theta
+/usr/local/lib/python3.12/dist-packages/scipy/integrate/_ivp/radau.py:455: RuntimeWarning: overflow encountered in scalar divide
+  LU_real = self.lu(MU_REAL / h * self.I - J)
+/usr/local/lib/python3.12/dist-packages/scipy/integrate/_ivp/radau.py:455: RuntimeWarning: invalid value encountered in multiply
+  LU_real = self.lu(MU_REAL / h * self.I - J)
+    [PASS] corrupt state (theta = 0) is reported as a failure  --  message: solve_ivp RAISED on sub-interval [0, 1] s: ValueError: array must not contain infs or NaNs
+    [PASS] failure does not raise out of advance()
+    [PASS] extreme-stiffness run returns a StepReport either way  --  success = True, no message
+    [PASS] an inconsistent spring preload is caught by the residual monitor  --  max residual 3.0000e+06 Pa (3.000e-01 of sigma_n)
+
+--------------------------------------------------------------------------
+TEST 17  --  History, export and timeline reconstruction
+--------------------------------------------------------------------------
+    [PASS] history time is strictly non-decreasing  --  8272 samples
+    [PASS] history exposes every field the interface needs  --  14 fields
+    [PASS] index_at_time finds the nearest stored sample  --  requested 1000.000 s, got 1000.000 s
+    [PASS] a reconstructed snapshot is internally consistent (spring extension matches stress)  --  residual 4.433e-07 Pa; e = 6159.6499 um, delta = 846.2232 um, u_lp = 1000.0000 um
+    [PASS] decimation for plotting preserves endpoints and field set  --  8272 -> 500 samples
+    [PASS] history CSV written with units in the header  --  1.97 MB
+    [PASS] event-catalogue CSV written with explicit column names  --  1040 bytes
+    [PASS] history CSV header states the model's limitations
+
+--------------------------------------------------------------------------
+TEST 18  --  Hold experiment (V_lp = 0)
+--------------------------------------------------------------------------
+    [PASS] Hold runs without solver failure
+    [PASS] during Hold the load point stops
+    [PASS] during Hold the block still creeps (V > 0) and decelerates  --  V: 9.9918e-07 -> 1.2822e-09 m/s
+    [PASS] during Hold the spring unloads (tau_total falls)  --  tau_total: 6.0000 -> 5.9200 MPa
+    [PASS] during Hold theta grows (ageing-law healing)  --  theta: 20.000 -> 250.930 s
+    [PASS] Hold schedule reports no steady state, so kc_QD is undefined
+
+==========================================================================
+ SUMMARY: 107 passed, 0 failed, 0 test group(s) crashed, 96.8 s total
+==========================================================================
+
+ REMINDER: passing these tests shows the code solves the equations
+ it claims to solve. It does NOT show that those equations describe
+ any real rock. Comparison with published results and laboratory
+ data remains future work.
+########## STAGE-3 CONTROLLER SUITE ##########
+==========================================================================
+ test_simulation_controller.py  --  Stage-3 controller tests
+ rsf_engine v0.2, simulation_controller v0.2
+==========================================================================
+
+--------------------------------------------------------------------------
+TEST 1  --  Play and Pause
+--------------------------------------------------------------------------
+    [PASS] a new controller starts paused
+    [PASS] no model time advances while paused  --  t stayed at 0 s
+    [PASS] play() sets playing
+    [PASS] model time advances while playing  --  t 0 -> 10 s
+    [PASS] pause() stops advancement  --  t stayed at 10 s
+    [PASS] toggle_play() resumes and history keeps growing  --  101 -> 151 samples
+
+--------------------------------------------------------------------------
+TEST 2  --  Single Step
+--------------------------------------------------------------------------
+    [PASS] single_step advances exactly SINGLE_STEP_DT of model time  --  advanced 0.5 s, declared 0.5 s
+    [PASS] single_step leaves the simulation paused
+    [PASS] single_step with an explicit amount also pauses and is exact  --  advanced 0.25 s
+
+--------------------------------------------------------------------------
+TEST 3  --  Reset
+--------------------------------------------------------------------------
+    [PASS] a trajectory exists before Reset  --  t = 40 s, 401 samples
+    [PASS] Reset returns model time to zero
+    [PASS] Reset returns delta and u_lp to zero
+    [PASS] Reset clears the history down to the initial sample  --  1 sample
+    [PASS] Reset clears the event catalogue
+    [PASS] Reset leaves the simulation paused
+    [PASS] Reset recomputes a consistent spring preload  --  residual 0.000e+00 Pa
+    [PASS] Reset can change the evolution law  --  law = slip
+
+--------------------------------------------------------------------------
+TEST 4  --  Changing V_lp continues the trajectory
+--------------------------------------------------------------------------
+    [PASS] V_lp change does not move model time
+    [PASS] V_lp change does not alter V  --  V = 1.020570e-06 m/s
+    [PASS] V_lp change does not alter theta
+    [PASS] V_lp change does not alter delta or u_lp
+    [PASS] V_lp change does not alter any stress
+    [PASS] V_lp change does not clear the history  --  401 samples
+    [PASS] the new V_lp is what the engine now imposes  --  V_lp = 5.0000e-06 m/s
+    [PASS] V responds to the new V_lp  --  V 1.0206e-06 -> 4.7242e-06 m/s
+    [PASS] negative V_lp is rejected
+    [PASS] V_lp above the supported range is clipped, not accepted silently  --  requested 1.0, got 1.000e-03 m/s (V_LP_MAX = 1.0e-03)
+
+--------------------------------------------------------------------------
+TEST 5  --  Hold
+--------------------------------------------------------------------------
+    [PASS] hold() switches the mode  --  hold (V_lp = 0)
+    [PASS] V_lp is exactly zero during Hold
+    [PASS] u_lp stops advancing during Hold  --  u_lp 40.000000 -> 40.000000 um
+    [PASS] the block keeps creeping during Hold (V > 0)  --  V = 2.0871e-08 m/s
+    [PASS] delta still advances during Hold (block moves, load point does not)  --  delta 40.6998 -> 50.4543 um
+    [PASS] the spring unloads during Hold  --  tau_total 6.00002 -> 5.92687 MPa
+    [PASS] Hold reports that no stationary kc_QD is defined  --  note shown to the user begins: NO STATIONARY kc_QD IS DEFINED for this loading. kc_...
+
+--------------------------------------------------------------------------
+TEST 6  --  Presets cannot silently replace a trajectory
+--------------------------------------------------------------------------
+    [PASS] staging a preset pauses the simulation
+    [PASS] staging a preset does NOT change the parameters  --  k still 9.9990e+08 Pa/m
+    [PASS] staging a preset does NOT touch the trajectory
+    [PASS] the staged summary warns that applying it will Reset
+    [PASS] a pending preset is reported
+    [PASS] cancelling leaves everything alone
+    [PASS] applying a preset performs a full Reset
+    [PASS] applying a preset installs the new parameters  --  a = 0.01, b = 0.005 (velocity strengthening)
+    [PASS] preset 'stable_vs' reports stiffness diagnostics  --  k/kc_QS = -0.4000, k/kc_QD = -0.4000
+    [PASS] preset 'stable_vw' reports stiffness diagnostics  --  k/kc_QS = 2.9997, k/kc_QD = 3.0000
+    [PASS] preset 'near_critical' reports stiffness diagnostics  --  k/kc_QS = 1.0199, k/kc_QD = 1.0200
+    [PASS] preset 'unstable' reports stiffness diagnostics  --  k/kc_QS = 0.4000, k/kc_QD = 0.4000
+    [PASS] preset 'damping_matters' reports stiffness diagnostics  --  k/kc_QS = 0.8800, k/kc_QD = 1.1000
+
+--------------------------------------------------------------------------
+TEST 7-9  --  Manual pull
+--------------------------------------------------------------------------
+    [PASS] beginning a drag pauses and switches to manual mode  --  manual pull
+    [PASS] final u_lp equals the imposed manual displacement  --  imposed 100.000000 um, u_lp advanced 100.000000 um, rel error 0.000e+00
+    [PASS] controller's own tally agrees with u_lp
+    [PASS] delta is determined by the engine, not by the pointer  --  load point moved 100.0000 um, block slipped 116.1083 um -- the difference -16.1083 um went into the spring
+    [PASS] the spring extension changed by exactly (u_lp - delta)  --  de = -16.108268 um, du_lp - ddelta = -16.108268 um
+    [PASS] spring-stress residual stays at solver tolerance during manual pull  --  residual 0.0000e+00 Pa (0.000e+00 of sigma_n)
+    [PASS] dragging left does not move the load point backwards  --  u_lp unchanged at 100.000000 um
+    [PASS] dragging left does not advance model time
+    [PASS] dragging left raises a clear warning  --  Backward drag ignored
+    [PASS] releasing the pointer defaults to Hold  --  hold (V_lp = 0)
+    [PASS] V_lp really is zero after release
+    [PASS] a saturating drag still applies the full displacement  --  imposed 8000.0000 um, applied 8000.0000 um
+    [PASS] a saturating drag warns that model time was stretched  --  Drag speed saturated at V_lp = 1
+    [PASS] the imposed V_lp never exceeds the manual ceiling  --  V_lp = 1.0000e-03 m/s, ceiling 1.0e-03 m/s
+    NOTE: Manual sensitivity mapping is displayed as: 2.000e-05 m of load-point displacement per screen pixel (20 um/px)
+    [PASS] manual pull never rewrites history (time is monotone)  --  568 samples
+
+--------------------------------------------------------------------------
+TEST 10  --  Operational state labels
+--------------------------------------------------------------------------
+    [PASS] rule fires correctly for 'event'  --  got 'Rapid-slip event' via: V = 1.000e-02 m/s > V_event = 1.0e-03 m/s
+    [PASS] rule fires correctly for 'post-event'  --  got 'Post-event relaxation' via: 5 s since the last event ended < post_event_window = 20 s
+    [PASS] rule fires correctly for 'accelerating'  --  got 'Accelerating' via: d(ln V)/dt = 5.000e-01 1/s > dlnV_dt_accel = 1.0e-03 1/s AND V > 2.0 * V_lp
+    [PASS] rule fires correctly for 'creep'  --  got 'Stable creep' via: V/V_lp = 1 is inside [0.5, 2.0]
+    [PASS] rule fires correctly for 'locked'  --  got 'Nearly locked' via: V/V_lp = 1.000e-03 < locked_ratio = 0.1
+    [PASS] rule fires correctly for 'hold-locked'  --  got 'Nearly locked' via: V_lp = 0 (Hold) and V = 1.000e-11 m/s < V_locked_abs = 1.0e-09 m/s
+    [PASS] settling back onto steady creep is NOT called accelerating  --  the accelerating rule is gated on V > 2*V_lp
+    [PASS] a stable velocity-weakening run settles into 'Stable creep'  --  'Stable creep' -- V/V_lp = 1 is inside [0.5, 2.0]
+    [PASS] a velocity-strengthening run also settles into 'Stable creep'  --  'Stable creep'
+    [PASS] a stick-slip run passes through locked, accelerating and event  --  labels seen: Accelerating, Nearly locked, Post-event relaxation, Rapid-slip event, Stable creep, Transient
+    [PASS] every label produced comes with the rule that produced it  --  0.000146 s since the last event ended < post_event_window = 20 s
+
+--------------------------------------------------------------------------
+TEST 11-12  --  History and event-marker continuity
+--------------------------------------------------------------------------
+    [PASS] history time is monotone non-decreasing across many frames  --  5970 samples
+    [PASS] history has no gaps at frame boundaries
+    [PASS] plot data comes from History and is decimated for display only  --  5970 stored, 800 plotted
+    [PASS] the latest plotted point matches the animation's latest time  --  plot ends at 1132.297374 s, snapshot at 1132.297374 s
+    [PASS] event markers exist and lie inside the plotted time range  --  2 markers at 358.29, 1132.26
+    [PASS] event marker at t = 358.289 s coincides with V crossing the threshold  --  max V near marker = 2.2200e-03 m/s
+    [PASS] event marker at t = 1132.262 s coincides with V crossing the threshold  --  max V near marker = 2.5274e-03 m/s
+    [PASS] event catalogue names the three stress drops separately
+    [PASS] the first event is flagged as possible spin-up
+
+--------------------------------------------------------------------------
+TEST 13  --  Playback speed does not change physics
+--------------------------------------------------------------------------
+    [PASS] speed 'Slow' leaves V_lp untouched  --  V_lp = 1.0000e-06 m/s, speed = 1 model s per real s
+    [PASS] speed 'Normal' leaves V_lp untouched  --  V_lp = 1.0000e-06 m/s, speed = 25 model s per real s
+    [PASS] speed 'Fast' leaves V_lp untouched  --  V_lp = 1.0000e-06 m/s, speed = 200 model s per real s
+    [PASS] changing speed does not move model time or the state
+    [PASS] changing speed does not alter the parameters
+    [PASS] both speeds landed on exactly the same model time  --  Slow t = 60.0, Fast t = 60.0
+    [PASS] the same model time reached at Slow and Fast gives the same V  --  Slow: V = 9.9600368986e-07 at t = 60.0000 s; Fast: V = 9.9600368985e-07 at t = 60.0000 s; rel 7.953e-12
+    NOTE: Speed changes the model time advanced per frame, i.e. the chunk size. Stage 2 showed chunking leaves the interseismic solution unchanged to 1 part in 1e13, which is why this comparison holds.
+    [PASS] toggling adaptive advancement does not change V_lp  --  V_lp = 1.0000e-06 m/s
+
+--------------------------------------------------------------------------
+TEST 14  --  Solver failure propagation
+--------------------------------------------------------------------------
+/home/claude/rsf_engine.py:892: RuntimeWarning: divide by zero encountered in scalar divide
+  num = p.k * (V_lp - V) - p.sigma_n * p.b * dth / theta
+/usr/local/lib/python3.12/dist-packages/scipy/integrate/_ivp/common.py:125: RuntimeWarning: invalid value encountered in multiply
+  y1 = y0 + h0 * direction * f0
+/home/claude/rsf_engine.py:909: RuntimeWarning: divide by zero encountered in scalar divide
+  dratio_dth = -1.0 / theta ** 2
+/home/claude/rsf_engine.py:910: RuntimeWarning: invalid value encountered in scalar divide
+  dratio_dL = dth_dL / theta
+/home/claude/rsf_engine.py:921: RuntimeWarning: divide by zero encountered in scalar divide
+  num = p.k * (V_lp - V) - p.sigma_n * p.b * dth / theta
+    [PASS] a failing step returns False rather than raising
+    [PASS] the simulation pauses immediately on failure
+    [PASS] an error message is exposed to the interface  --  solve_ivp RAISED on sub-interval [30, 31] s: ValueError: array must not contain infs or NaNs
+    [PASS] the error names the loading mode and V_lp
+    [PASS] the error states that the trajectory so far is preserved
+    [PASS] the trajectory obtained so far is kept  --  301 samples before, 301 after
+    [PASS] no fabricated values: nothing beyond the last good point
+    [PASS] play() refuses to restart a failed run  --  the user must Reset
+    [PASS] Reset clears the error and allows play again
+
+--------------------------------------------------------------------------
+TEST 15  --  Timeline snapshot matches stored state
+--------------------------------------------------------------------------
+    [PASS] running live before scrubbing
+    [PASS] selecting a past time pauses the simulation
+    [PASS] the snapshot reports that it is not live
+    [PASS] scrubbed 't' equals the stored sample exactly  --  1.4360812053e+02
+    [PASS] scrubbed 'V' equals the stored sample exactly  --  1.9206986827e-07
+    [PASS] scrubbed 'delta' equals the stored sample exactly  --  1.9210444894e-04
+    [PASS] scrubbed 'u_lp' equals the stored sample exactly  --  1.4360812053e-04
+    [PASS] scrubbed 'e' equals the stored sample exactly  --  5.9573767847e-03
+    [PASS] scrubbed 'tau_total' equals the stored sample exactly  --  5.9567810470e+06
+    [PASS] scrubbed 'mu' equals the stored sample exactly  --  5.9567800867e-01
+    [PASS] scrubbed 'theta' equals the stored sample exactly  --  2.9620929172e+01
+    [PASS] the reconstructed snapshot is internally consistent  --  residual 9.313e-10 Pa
+    [PASS] scrubbing does not alter the stored history  --  2241 samples
+    [PASS] return_to_live goes back to the latest sample  --  back at t = 358.323167 s
+
+--------------------------------------------------------------------------
+TEST 16  --  Worker thread
+--------------------------------------------------------------------------
+    [PASS] the worker advances model time in the background  --  t = 37.123 s after 1.5 s of real time (45 frames)
+    [PASS] pausing stops the worker advancing  --  t stayed at 37.122756 s
+    [PASS] the worker achieved a usable frame rate  --  45 frames in ~1.8 s (target 25 Hz)
+    NOTE: Last frame's integration cost: 0.01 ms (budget at 25 Hz is 40.0 ms)
+    [PASS] the worker stopped cleanly
+
+--------------------------------------------------------------------------
+TEST 17  --  Physical event detection vs visual event display
+--------------------------------------------------------------------------
+    [PASS] (a) the physical event is detected and catalogued  --  onset 358.2894 s, end 358.3232 s, duration 0.03376 s, V_max 7.5925e-02 m/s, peak at 358.3083 s, spin-up flag True
+    [PASS] (a) the catalogue records the three stress drops separately  --  total 0.5105 MPa, friction 0.5904 MPa, damping 0.0000 MPa
+    [PASS] (b) History contains many samples inside the event  --  965 samples, largest gap 1.777e-04 s, V spans 9.918e-04 to 7.593e-02 m/s
+    [PASS] (b) samples inside the event come from the solver's own steps, not from interpolation across it  --  largest stored gap 1.777e-04 s is 190x smaller than the event; History stores solve_ivp's adaptive steps directly (no dense_output, no interpolation)
+    [PASS] (c) the controller reports the physical event interval it saw  --  interval (358.3222, 358.3230) s, V_max 1.3252e-03 m/s
+    [PASS] (d) UI frames sample the event (adaptive advancement working)  --  103 frames had V above threshold (before the fix this was 0 of 45)
+    [PASS] (d) the physical label 'Rapid-slip event' is produced  --  103 frames carried the physical event label
+    [PASS] (d) the visual latch activated  --  104 frames had event_flash_active
+    [PASS] (e) latch is active immediately after arming  --  0.600 s remaining of 0.60 s
+    [PASS] (e) latch still active at half its documented duration  --  0.300 s left
+    [PASS] (e) latch has expired after its documented duration  --  EVENT_FLASH_HOLD_S = 0.60 s elapsed
+    [PASS] (e) after expiry the visual label falls back to the physical one  --  both now 'Post-event relaxation'
+    [PASS] (f) the visual latch did not change the event duration  --  duration still 0.033755 s
+    [PASS] (f) the visual latch did not change the event count or onset  --  onset still 358.289412 s
+    [PASS] (f) the latch never claims V is above threshold  --  V = 9.9182e-04 m/s while the flash was shown
+    [PASS] the latch is suppressed while viewing a past time  --  a past moment is labelled by what was happening then
+
+--------------------------------------------------------------------------
+TEST 18  --  Adaptive model-time advancement
+--------------------------------------------------------------------------
+    [PASS] interseismically the cap is loose (large chunks allowed)  --  cap 5.000 s, binding bound = slip-per-frame, dt_slip 5.000 s, dt_rate inf s
+    [PASS] the interseismic cap does not force a tiny step for the whole 774 s cycle  --  cap 5.000 s corresponds to 0.25 x Dc of slip per frame
+    [PASS] the cap tightens by orders of magnitude during rapid slip  --  cap ranged 6.586e-05 to 5.000e+00 s; min during the event 6.586e-05 s
+    [PASS] the cap never falls below its documented floor  --  min cap 6.586e-05 s, floor 1.0e-07 s
+    [PASS] with adaptive advancement OFF the event is missed by the frames (the original bug, reproduced deliberately)  --  0 frames sampled the event, yet 1 event(s) were still catalogued -- the solver always resolved it; only the frame sampling missed it
+    NOTE: Adaptive advancement changes the chunk size, not the equations. Stage 2 measured chunking to be neutral to 1 part in 1e13 interseismically.
+
+--------------------------------------------------------------------------
+TEST 19  --  Threading and asynchronous safety
+--------------------------------------------------------------------------
+    [PASS] duplicate start() does not create a second worker thread  --  1 integrator thread(s) alive
+    [PASS] duplicate play() calls are idempotent  --  t = 9.0297 s
+    [PASS] Pause during an active worker stops advancement cleanly  --  t held at 9.029655 s across 0.4 s of real time
+    [PASS] Reset during an active worker leaves a clean t = 0 trajectory  --  t = 0.000000 s, 1 sample(s)
+    [PASS] worker stops cleanly after a mid-flight Reset
+    [PASS] only one integration job runs at a time under 6 concurrent callers  --  peak concurrency 1
+    [PASS] concurrent advancement did not corrupt History  --  1501 samples, time still monotone
+    [PASS] a result computed before a Reset is discarded as stale  --  1 stale result(s) discarded
+    [PASS] the stale result did not contaminate the fresh trajectory  --  t = 0.0, 1 sample(s) (was t = 0.0000 s before Reset)
+    [PASS] snapshot() is not blocked by an in-flight 300 ms integration  --  20 snapshot reads took 0.6 ms while a 300 ms integration was running -- the field lock is released during solve_ivp
+
+==========================================================================
+ SUMMARY: 148 passed, 0 failed, 0 test group(s) crashed, 17.8 s
+==========================================================================
+
+ REMINDER: these tests check that the controller behaves as specified.
+ They are not evidence that the physical model describes any real rock.
