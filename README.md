@@ -374,6 +374,17 @@ therefore **not claimed**. Please check the following locally:
 * `solve_ivp` failures pause the run, preserve the partial trajectory and
   report the solver message. Nothing beyond the last good point is invented.
 
+## Development note
+
+This project was developed as a personal learning and reproducibility exercise.
+The architecture, implementation, testing, documentation, and debugging were
+produced with substantial assistance from Anthropic Claude, under the author's
+direction and review. The author is independently studying and verifying the
+underlying rate-and-state friction physics and numerical behaviour.
+
+Passing the automated tests demonstrates internal consistency of the
+implementation; it does not constitute scientific validation against
+laboratory observations or natural faults.
 ---
 
 ## 14. Version history
