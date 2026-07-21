@@ -6,6 +6,9 @@ quasi-dynamic** rate-and-state friction spring-slider.
 Prepared for Mohammad Tawhidur Rahman Tushar, incoming DPhil student,
 Department of Earth Sciences, University of Oxford.
 
+<img width="1280" height="764" alt="Screenshot 2026-07-21 232043" src="https://github.com/user-attachments/assets/6a8f6394-95c8-40e4-97ca-1e556d40547c" />
+
+
 > **Successful execution is not scientific validation.** That this program
 > runs, and that its 107 + 148 automated checks pass, shows only that it
 > solves the equations it claims to solve, and that its controls behave as
