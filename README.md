@@ -385,6 +385,7 @@ underlying rate-and-state friction physics and numerical behaviour.
 Passing the automated tests demonstrates internal consistency of the
 implementation; it does not constitute scientific validation against
 laboratory observations or natural faults.
+
 ---
 
 ## 14. Version history
