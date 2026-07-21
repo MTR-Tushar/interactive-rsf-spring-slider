@@ -44,8 +44,9 @@ Open PowerShell or Command Prompt in the project folder, then:
 
 ```
 py -m venv .venv
-.venv\Scripts\activate
-py -m pip install --upgrade pip
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
